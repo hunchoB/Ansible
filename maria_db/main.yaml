@@ -1,0 +1,33 @@
+---
+- name: install MariaDB
+  hosts: nodes
+  vars_files:
+    - vars/main.yaml
+  tasks:
+    - name: Install 'mariadb-server' and 'MySQL-python' packages
+      package:
+       name:
+        - mariadb-server
+        - MySQL-python
+       state: present
+
+    - name: Ensure 'mariadb' service is started and enabled
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: Create "{{ db_name }}" database
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+
+    - name: >
+        Create database user "{{ db_user }}" with "{{ db_pass }}"
+        and "{{ db_name }}".*:ALL privelege
+      no_log: true
+      mysql_user:
+        state: present
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: '{{ db_name }}.*:ALL'
