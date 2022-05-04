@@ -1,0 +1,27 @@
+---
+- name: Users
+  hosts: nodes
+  gather_facts: true
+  vars_files:
+    - passwords.yaml
+  vars:
+    comment_for_users: "«Ansible-generated user»"
+  tasks:
+    - name: create users
+      user:
+        name: "{{ user.value.login }}"
+        comment: "{{ comment_for_users }}"
+        password: "{{ user.value.password | password_hash('sha512') }}"
+      loop: "{{ lookup('dict', users) }}"
+      loop_control:
+        loop_var: user
+        pause: 5
+      no_log: true
+
+    - name: Return all users from passwd file
+      command: cat /etc/passwd
+      register: passwd_file
+      
+    - name: Print passwd file  
+      debug:
+        msg: "{{ passwd_file.stdout_lines }}"    
