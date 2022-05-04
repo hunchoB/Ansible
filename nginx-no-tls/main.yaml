@@ -1,0 +1,127 @@
+---
+- name: configure webserver without tls
+  hosts: nodes
+  gather_facts: true
+  become: true
+  vars:
+    nginx_port_no_tls: 80
+    nginx_port_with_tls: 443
+  tasks:
+    - name: create nginx repo definition
+      copy:
+        src: nginx.repo
+        dest: /etc/yum.repos.d/nginx.repo
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: install nginx
+      yum:
+        name: nginx
+        update_cache: true
+        state: present
+
+    - name: copy main nginx config file
+      copy:
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart nginx
+
+    - name: copy site's nginx config file
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/conf.d/notls.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart nginx
+
+    - name: copy index.html
+      template:
+        src: templates/index.html.j2
+        dest: /usr/share/nginx/html/index.html
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart nginx
+    
+    - name: create dir for certs config
+      ansible.builtin.file:
+        path: /etc/nginx/snippets/
+        state: directory
+        mode: '0755'
+
+    - name: copy self-signed.conf to remote host
+      ansible.builtin.copy:
+        src: /home/ansible/nginx-no-tls/files/self-signed.conf
+        dest: /etc/nginx/snippets/self-signed.conf
+        owner: root
+        group: root
+        mode: '0644'
+    
+    - name: copy ssl-params.conf to remote host
+      ansible.builtin.copy:
+        src: /home/ansible/nginx-no-tls/files/ssl-params.conf
+        dest: /etc/nginx/snippets/ssl-params.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nginx
+
+    - name: copy cert to remote host
+      ansible.builtin.copy:
+        src: /home/ansible/nginx-no-tls/certs/nginx.crt
+        dest: /etc/ssl/certs/
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nginx
+
+    - name: copy private key to remote host
+      ansible.builtin.copy:
+        src: /home/ansible/nginx-no-tls/certs/nginx.key
+        dest: /etc/ssl/private/
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nginx 
+
+    - name: copy dhparam.pem to remote host
+      ansible.builtin.copy:
+        src: /home/ansible/nginx-no-tls/certs/dhparam.pem
+        dest: /etc/ssl/certs/
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart nginx   
+
+    - name: ensure nginx is enabled and started
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: insert firewalld rule for nginx
+      firewalld:
+        port: "{{ nginx_port_no_tls }}/tcp"
+        permanent: true
+        state: enabled
+        immediate: true
+      ignore_errors: true
+
+  post_tasks:
+    - name: check web site from control server
+      uri:
+        url: "https://{{ ansible_host }}:{{ nginx_port_with_tls }}"
+        return_content: yes
+      register: this
+      failed_when: this.status != 200
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
