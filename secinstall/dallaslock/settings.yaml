@@ -1,0 +1,26 @@
+---
+- name: Post installation settings DallasLock
+  hosts: all
+  gather_facts: true
+  
+  become: true
+  tasks:
+    - name: Set NOT lock screen for VM
+      shell: ishl -z dlladmin <<< $(echo -e "policies\r session-policies-set\r lock-timeout 0\r execute\r")
+      args:
+        executable: /bin/bash
+    
+    - name: Set NOT lock users when failed password
+      shell: ishl -z dlladmin <<< $(echo -e "policies\r password-policies-set\r retries 0\r execute\r")
+      args:
+        executable: /bin/bash
+
+    - name: Remove installation files
+      file:
+        path: /root/security
+        state: absent
+
+    - name: Reboot machine to apply settings
+      reboot:
+
+    

@@ -1,0 +1,4 @@
+---
+# tasks file for kaspersky_install
+- import_tasks: kesl.yml
+  tags: kesl

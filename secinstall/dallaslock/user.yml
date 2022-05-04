@@ -1,0 +1,25 @@
+---
+- name: User
+  hosts: all
+  gather_facts: true
+  vars:
+    comment_for_users: "«redcheck user for scaning»"
+    password: "*******************"
+  become: true
+
+  tasks:
+    - name: Create redcheck user in CentOS
+      user:
+        name: "redcheck"
+        comment: "{{ comment_for_users }}"
+        password: "{{ password | password_hash('sha512') }}" 
+        groups: wheel
+      when: ansible_distribution == "CentOS"
+
+    - name: Create redcheck user in Ubuntu
+      user:
+        name: "redcheck"
+        comment: "{{ comment_for_users }}"
+        password: "{{ password | password_hash('sha512') }}" 
+        groups: sudo
+      when: ansible_os_family == "Debian" 

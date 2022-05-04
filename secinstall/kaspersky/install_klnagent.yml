@@ -1,0 +1,53 @@
+---
+- name: "Installing Kaspersky"
+  hosts: nodes
+  gather_facts: yes
+  become: yes
+
+  pre_tasks:
+    # Run task below in productive mode
+
+    - name: Check ping to KSC
+      shell: ping -c 2 10.61.63.15
+      register: ping_stat
+      failed_when: ping_stat.rc != 0
+
+    - name: Create SecInstallation dir
+      file:
+        path: /root/security
+        state: directory
+        mode: '0755'
+
+    - name: Install Perl
+      yum: 
+        name: perl
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: Copy Installation Pack to RemoteServer
+      copy: 
+        src: /home/ansible/secinstall/kaspersky/package/ksvlalin/{{ item }}
+        dest: '/root/security/'
+        owner: root
+        group: root
+        mode: a+x
+      loop:
+        - klnagent.ini
+        - klrbtagt.ini
+        - license.txt
+        - lightagent-5.1.44-514-bundle.sh
+        - lightagent.ini
+        - lightagent.kud
+
+    - name: Run Start .sh script
+      command: sh /root/security/lightagent-5.1.44-514-bundle.sh
+
+  roles:
+    - klnagent_install
+    - kaspersky_install
+
+  post_tasks:
+    - name: Remove installation files
+      file:
+        path: /root/security
+        state: absent

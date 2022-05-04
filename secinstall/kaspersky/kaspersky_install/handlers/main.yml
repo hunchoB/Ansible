@@ -1,0 +1,6 @@
+---
+# handlers file for kaspersky_install
+- name: restart lightagent
+  service:
+    name: "lightagent"
+    state: restarted

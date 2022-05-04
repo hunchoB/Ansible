@@ -1,0 +1,50 @@
+---
+- name: Installation DallasLock on CentOS7
+  hosts: all
+  gather_facts: true
+  become: true
+  vars:
+    license_number: ******************
+  tasks:
+    - name: Check Internet Connection
+      shell: ping -c 2 8.8.8.8
+      register: ping_stat
+      failed_when: ping_stat.rc != 0
+
+    - name: Upgrade all packages on CentOS
+      yum:
+        name: '*'
+        update_cache: yes
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: Upgrade all packages on Debian
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian" 
+
+    - name: Disable SELinux
+      ansible.posix.selinux:
+        state: disabled
+      when: ansible_distribution == "CentOS"
+      
+    - name: Reboot machine to apply settings
+      reboot:
+        reboot_timeout: 600
+
+    - name: Create SecInstallation dir
+      file:
+        path: /root/security
+        state: directory
+        mode: '0755'
+
+    - name: Copy Install Package
+      copy: 
+        src: /home/ansible/secinstall/dallaslock/dllx-4550.run
+        dest: /root/security/dllx-4550.run
+        owner: root
+        group: root
+        mode: a+x
+
+    - name: Install DallasLock
+      command: /root/security/dllx-4550.run {{ license_number }}

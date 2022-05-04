@@ -1,0 +1,28 @@
+---
+- block:
+    - name: "Creating answer file for klnagent"
+      become: yes
+      template:
+        src: klnagent.j2
+        dest: /root/security/klnagent.ini
+        mode: 0644
+      tags: klnagent
+
+    - name: "Run configuring klnagent"
+      become: yes
+      shell: "/opt/kaspersky/klnagent64/lib/bin/setup/postinstall.pl"
+      args:
+        executable: /bin/bash 
+      environment: 
+        KLAUTOANSWERS: /root/security/klnagent.ini
+      notify: restart klnagent
+      tags: klnagent
+      register: kesl
+
+    - name: "Ensure klnagent service is enabled"
+      become: yes
+      service:
+        name: klnagent64
+        enabled: yes
+        state: started
+      tags: kesl

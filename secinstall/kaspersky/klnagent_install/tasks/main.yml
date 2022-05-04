@@ -1,0 +1,4 @@
+---
+# tasks file for klnagent_install
+- import_tasks: klnagent.yml
+  tags: klnagent

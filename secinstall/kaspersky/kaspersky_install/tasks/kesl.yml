@@ -1,0 +1,18 @@
+- block:
+  - name: "Lightagent Install"
+    become: yes
+    shell: "/opt/kaspersky/lightagent/bin/lightagent-setup.pl --auto-install=/root/security/lightagent.ini"
+    register: postconfig_result
+    notify:  restart lightagent
+
+  - name: "Ensure kesl service is enabled"
+    become: yes
+    service:
+      name: lightagent
+      enabled: yes
+      state: started
+    tags: kesl
+
+  - name: Install message from Lightagent
+    debug:
+      msg: "{{ postconfig_result }}" 
