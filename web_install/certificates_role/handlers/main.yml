@@ -1,0 +1,6 @@
+---
+# handlers file for certificates_role
+- name: restart nginx
+  service:
+    name: "nginx"
+    state: restarted

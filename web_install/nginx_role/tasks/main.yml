@@ -1,0 +1,4 @@
+---
+# tasks file for install nginx
+- import_tasks: nginx.yml
+  tags: nginx

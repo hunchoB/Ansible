@@ -1,0 +1,60 @@
+---
+- block:
+  - name: copy site's nginx config file
+    template:
+      src: /home/ansible/web_install/certificates_role/templates/nginx.conf.j2
+      dest: /etc/nginx/conf.d/notls.conf
+      owner: root
+      group: root
+      mode: 0644
+    notify: restart nginx
+  
+  - name: create dir for certs config
+    ansible.builtin.file:
+        path: /etc/nginx/snippets/
+        state: directory
+        mode: '0755'
+
+  - name: copy self-signed.conf to remote host
+    ansible.builtin.copy:
+      src: /home/ansible/web_install/certificates_role/certs/self-signed.conf
+      dest: /etc/nginx/snippets/self-signed.conf
+      owner: root
+      group: root
+      mode: '0644'
+  
+  - name: copy ssl-params.conf to remote host
+    ansible.builtin.copy:
+      src: /home/ansible/web_install/certificates_role/certs/ssl-params.conf
+      dest: /etc/nginx/snippets/ssl-params.conf
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
+  - name: copy cert to remote host
+    ansible.builtin.copy:
+      src: /home/ansible/web_install/certificates_role/certs/nginx.crt
+      dest: /etc/ssl/certs/
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
+  - name: copy private key to remote host
+    ansible.builtin.copy:
+      src: /home/ansible/web_install/certificates_role/certs/nginx.key
+      dest: /etc/ssl/private/
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx 
+
+  - name: copy dhparam.pem to remote host
+    ansible.builtin.copy:
+      src: /home/ansible/web_install/certificates_role/certs/dhparam.pem
+      dest: /etc/ssl/certs/
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx  

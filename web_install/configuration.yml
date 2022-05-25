@@ -1,0 +1,16 @@
+---
+- name: "Installing Web Server, Database and SelfSigned certificate"
+  hosts: nodes
+  gather_facts: yes
+  become: yes
+
+  roles:
+    - nginx_role
+    - certificates_role
+    - database_role
+
+  post_tasks:
+    - name: check web site from control server
+      uri:
+        url: "https://{{ ansible_host }}:{{ nginx_port_with_tls }}"
+        return_content: yes

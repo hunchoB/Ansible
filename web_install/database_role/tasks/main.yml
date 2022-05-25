@@ -1,0 +1,4 @@
+---
+# tasks file for database_role
+- import_tasks: mariadb_install.yml
+  tags: mariadb
