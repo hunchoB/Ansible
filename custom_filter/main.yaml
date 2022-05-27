@@ -1,0 +1,11 @@
+---
+# Написать собственный модуль на Python или Bash, который вернет код состояния HTTP-сервера.
+- name: MAC filter
+  hosts: nodes
+  gather_facts: true
+  vars:
+    source_string: '155371A478156754'
+  tasks:
+    - name: Use filter
+      ansible.builtin.debug:
+        msg: "{{ source_string | change_to_mac_address() }}"

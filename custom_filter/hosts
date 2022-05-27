@@ -1,0 +1,2 @@
+[nodes]
+cent ansible_host=10.140.2.69
