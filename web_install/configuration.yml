@@ -8,6 +8,7 @@
     - nginx_role
     - certificates_role
     - database_role
+    - wordpress_project
 
   post_tasks:
     - name: check web site from control server

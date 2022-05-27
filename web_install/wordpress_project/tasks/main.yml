@@ -1,0 +1,4 @@
+---
+# tasks file for wordpress_project
+- import_tasks: wordpress_php.yml
+  tags: wordpress_php
